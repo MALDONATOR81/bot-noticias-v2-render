@@ -3,7 +3,6 @@ from threading import Thread
 import requests
 import feedparser
 import time
-import re
 import os
 import signal
 import sys
@@ -12,22 +11,13 @@ from datetime import datetime
 # === LATIDO DEL BOT (Monitor anti-cuelgue) ===
 ultimo_latido = time.time()
 
-def monitor_actividad():
-    while True:
-        if time.time() - ultimo_latido > 180:
-            enviar_telegram("⚠️ El bot dejó de latir. Posible cuelgue o apagado inesperado.")
-            log_event("❗ Latido perdido. Forzando salida.")
-            os._exit(1)
-        time.sleep(60)
-
-Thread(target=monitor_actividad, daemon=True).start()
-
 # === CONFIGURACIÓN ===
 TELEGRAM_TOKEN = "832957113:AAHobf4jrHQQ-aMf5DMkY98Khi-vQjhIu6o"
 CHAT_ID = "8298601106"
 
 HISTORIAL_FILE = "notificados.txt"
 LOG_FILE = "registro.log"
+ULTIMO_RESUMEN_FILE = "ultimo_resumen.txt"
 
 # === PALABRAS CLAVE ===
 GENERAL_KEYWORDS = [
@@ -55,16 +45,16 @@ RSS_FEEDS = [
     "https://www.melillaactualidad.com/rss/"
 ]
 
-# === FUNCIONES ===
+# === FUNCIONES UTILITARIAS ===
 
 def cargar_ids_notificados():
     if not os.path.exists(HISTORIAL_FILE):
         return set()
-    with open(HISTORIAL_FILE, 'r') as f:
-        return set(line.strip() for line in f)
+    with open(HISTORIAL_FILE, 'r', encoding="utf-8") as f:
+        return set(line.strip() for line in f if line.strip())
 
 def guardar_id_notificado(uid):
-    with open(HISTORIAL_FILE, "a") as f:
+    with open(HISTORIAL_FILE, "a", encoding="utf-8") as f:
         f.write(uid + "\n")
     notificados.add(uid)
 
@@ -92,6 +82,45 @@ def enviar_telegram(msg):
     except Exception as e:
         log_event(f"❌ Error Telegram: {e}")
 
+# === RESUMEN DIARIO (como el bot anterior) ===
+
+def resumen_diario_ya_enviado():
+    if not os.path.exists(ULTIMO_RESUMEN_FILE):
+        return False
+    with open(ULTIMO_RESUMEN_FILE, "r", encoding="utf-8") as f:
+        return f.read().strip() == datetime.now().strftime("%Y-%m-%d")
+
+def marcar_resumen_enviado():
+    with open(ULTIMO_RESUMEN_FILE, "w", encoding="utf-8") as f:
+        f.write(datetime.now().strftime("%Y-%m-%d"))
+
+def enviar_resumen_diario():
+    if resumen_diario_ya_enviado():
+        return
+
+    hoy = datetime.now().strftime("%Y-%m-%d")
+    resumenes = []
+
+    if os.path.exists(LOG_FILE):
+        with open(LOG_FILE, 'r', encoding='utf-8') as f:
+            for linea in f:
+                if hoy in linea and "✅ Enviada noticia:" in linea:
+                    partes = linea.strip().split("✅ Enviada noticia: ")
+                    if len(partes) > 1:
+                        resumenes.append(partes[1])
+
+    texto = f"🗞️ <b>Resumen diario ({hoy})</b>\n\n"
+    if resumenes:
+        texto += f"✅ {len(resumenes)} noticias enviadas hoy:\n"
+        texto += "\n".join([f"• {t}" for t in resumenes])
+    else:
+        texto += "No se enviaron noticias hoy."
+
+    enviar_telegram(texto)
+    marcar_resumen_enviado()
+
+# === FUNCIONES PRINCIPALES ===
+
 def revisar_rss():
     for url in RSS_FEEDS:
         try:
@@ -110,10 +139,22 @@ def revisar_rss():
                     mensaje = f"📰 <b>{title}</b>\n🔗 {link}"
                     enviar_telegram(mensaje)
                     guardar_id_notificado(uid)
-                    log_event(f"Enviada: {title}")
+                    log_event(f"✅ Enviada noticia: {title}")
 
         except Exception as e:
-            log_event(f"Error en feed {url}: {e}")
+            log_event(f"⚠️ Error en feed {url}: {e}")
+
+# === MONITOR ANTI-CUELGUE ===
+
+def monitor_actividad():
+    while True:
+        if time.time() - ultimo_latido > 180:
+            enviar_telegram("⚠️ El bot dejó de latir. Posible cuelgue o apagado inesperado.")
+            log_event("❗ Latido perdido. Forzando salida.")
+            os._exit(1)
+        time.sleep(60)
+
+Thread(target=monitor_actividad, daemon=True).start()
 
 # === FLASK KEEP ALIVE ===
 app = Flask('')
@@ -130,13 +171,42 @@ def test():
 def run():
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)), debug=False)
 
-Thread(target=run).start()
+def keep_alive():
+    Thread(target=run).start()
+
+# === MANEJO DE SEÑALES (parada limpia) ===
+
+def manejar_salida_graciosa(signum, frame):
+    enviar_telegram("⚠️ El bot de noticias se ha detenido (señal recibida)")
+    log_event("⚠️ Bot detenido por señal")
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, manejar_salida_graciosa)
+signal.signal(signal.SIGTERM, manejar_salida_graciosa)
 
 # === INICIO ===
 notificados = cargar_ids_notificados()
-enviar_telegram("✅ Bot iniciado")
+keep_alive()
 
-while True:
-    ultimo_latido = time.time()
-    revisar_rss()
-    time.sleep(60)
+enviar_telegram("✅ Bot iniciado")
+log_event("🟢 Bot iniciado")
+
+try:
+    while True:
+        ultimo_latido = time.time()
+        revisar_rss()
+
+        # Resumen diario a las 23:55
+        if datetime.now().strftime("%H:%M") == "23:55":
+            enviar_resumen_diario()
+
+        time.sleep(60)
+
+except Exception as e:
+    msg = f"❌ Error:\n{e}"
+    enviar_telegram(msg)
+    log_event(msg)
+
+finally:
+    enviar_telegram("⚠️ Bot desconectado")
+    log_event("⚠️ Bot desconectado (bloque finally)")
