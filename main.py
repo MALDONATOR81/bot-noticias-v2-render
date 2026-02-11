@@ -23,81 +23,24 @@ def monitor_actividad():
 Thread(target=monitor_actividad, daemon=True).start()
 
 # === CONFIGURACIÓN ===
-TELEGRAM_TOKEN = "PON_AQUI_TU_NUEVO_TOKEN"
+TELEGRAM_TOKEN = "832957113:AAHobf4jrHQQ-aMf5DMkY98Khi-vQjhIu6o"
 CHAT_ID = "8298601106"
 
 HISTORIAL_FILE = "notificados.txt"
 LOG_FILE = "registro.log"
-ULTIMO_RESUMEN_FILE = "ultimo_resumen.txt"
 
 # === PALABRAS CLAVE ===
 GENERAL_KEYWORDS = [
-    # ---- TU LISTA ORIGINAL COMPLETA ----
-    "droga", "drogas", "narcotráfico", "tráfico de drogas", "narcos", "cocaína", "cocaina",
-    "hachís", "hachis", "heroína", "heroina", "lsd", "éxtasis", "extasis", "mdma", "ketamina",
-    "alucinógenos", "psicotrópicos", "estupefacientes", "sustancias ilícitas", "sustancias prohibidas",
-    "contrabando", "mercancía ilegal", "tabaco ilegal", "cajetillas", "cigarrillos",
-    "inmigración ilegal", "inmigración irregular", "migrantes ilegales", "patera", "cayuco", "frontera sur",
-    "saltos de valla", "vehículo robado", "vehículos robados", "coche robado", "coches robados",
-    "moto robada", "motos robadas", "matrícula falsa", "matrículas falsas", "matrículas duplicadas",
-    "documento falso", "documentación falsa", "papeles falsos", "falsificación", "fraude documental",
+    "droga","drogas","narcotráfico","tráfico de drogas","narcos","cocaína","hachís","heroína",
+    "contrabando","tabaco ilegal","inmigración ilegal","patera","cayuco",
+    "vehículo robado","coche robado","documento falso","falsificación",
 
-    "trafic de drogue", "drogue", "drogues", "cocaïne", "hachisch", "héroïne", "psychotropes",
-    "hallucinogènes", "stupéfiants", "substances illicites", "ecstasy", "lsd", "mdma", "kétamine",
-    "contrebande", "tabac de contrebande", "cigarettes", "marchandises illégales", "immigration illégale",
-    "immigration clandestine", "migrants illégaux", "passeur", "passeurs", "bateau de migrants", "barque",
-    "franchissement illégal", "véhicule volé", "véhicules volés", "voiture volée", "voitures volées",
-    "moto volée", "motos volées", "plaque falsifiée", "plaques falsifiées", "plaque dupliquée",
-    "plaques dupliquées", "faux documents", "falsification de documents", "fraude documentaire",
+    "terrorismo","terrorista","yihadismo","atentado","explosivo","célula terrorista",
+    "estado islámico","daesh","isis","al qaeda",
 
-    "مخدرات", "مخدر", "كوكايين", "حشيش", "هيروين", "حبوب مهلوسة", "مؤثرات عقلية", "حبوب",
-    "مواد مخدرة", "أقراص مخدرة", "أقراص مهلوسة", "التهريب", "السجائر المهربة", "سجائر مهربة",
-    "تبغ مهرب", "بضائع مهربة", "ممنوعات", "الهجرة السرية", "الهجرة غير الشرعية", "الهجرة غير النظامية",
-    "مهاجرين سريين", "قارب", "قوارب الموت", "مهاجرين غير شرعيين", "سيارة مسروقة", "سيارات مسروقة",
-    "مركبة مسروقة", "مركبات مسروقة", "دراجة نارية مسروقة", "دراجات نارية مسروقة", "لوحة مزورة",
-    "لوحات مزورة", "وثائق مزورة", "تزوير الوثائق", "تزوير",
+    "terrorisme","terroriste","attentat","cellule terroriste","etat islamique",
 
-    # ---- TERRORISMO ES ----
-    "terrorismo","terrorista","terroristas","yihadismo","yihadista","yihadistas",
-    "atentado","atentados","explosión","explosion","explosivo","explosivos",
-    "célula","celula","célula terrorista","celula terrorista",
-    "radicalización","radicalizacion","reclutamiento",
-    "estado islámico","estado islamico","daesh","isis","al qaeda","aqmi",
-
-    # ---- TERRORISMO FR ----
-    "terrorisme","terroriste","terroristes",
-    "djihadisme","djihadiste","djihadistes",
-    "attentat","attentats","explosif","explosifs",
-    "cellule terroriste","radicalisation","recrutement",
-    "etat islamique","état islamique","daech","al qaida",
-
-    # ---- TERRORISMO AR ----
-    "إرهاب","ارهاب","إرهابي","إرهابية","تطرف",
-    "جهاد","جهادي","تفجير","متفجرات",
-    "خلية إرهابية","داعش","تنظيم الدولة","القاعدة"
-]
-
-COMBINACIONES_ESPECIALES = [
-    ("véhicule","volé"),("véhicules","volés"),
-    ("voiture","volée"),("voitures","volées"),
-    ("moto","volée"),("motos","volées"),
-    ("plaque","dupliquée"),("plaques","dupliquées"),
-    ("document","faux"),("falsification","documents"),
-    ("خلية","إرهابية"),
-    ("célula","terrorista"),
-    ("cellule","terroriste")
-]
-
-COMBINACIONES_TRIPLES = [
-    ("ministerio","interior","informe estadístico"),
-    ("ministerio","interior","balance"),
-    ("ministerio","interior","memorándum"),
-    ("ministère","intérieur","rapport statistique"),
-    ("ministère","intérieur","bilan"),
-    ("ministère","intérieur","mémorandum"),
-    ("وزارة","الداخلية","تقرير إحصائي"),
-    ("وزارة","الداخلية","حصيلة"),
-    ("وزارة","الداخلية","مذكرة")
+    "إرهاب","إرهابي","تفجير","خلية إرهابية","داعش","القاعدة"
 ]
 
 # === FUENTES RSS ===
@@ -106,14 +49,9 @@ RSS_FEEDS = [
     "https://www.hespress.com/feed",
     "https://www.yabiladi.com/rss/news.xml",
     "https://www.hibapress.com/feed",
-
-    # CEUTA
     "https://elfarodeceuta.es/feed",
-    "https://elfarodeceuta.es/sucesos-seguridad/feed",
     "https://www.ceutaactualidad.com/rss/",
     "https://www.ceutaldia.com/rss/",
-
-    # MELILLA
     "https://www.melillaactualidad.com/rss/"
 ]
 
@@ -127,53 +65,49 @@ def cargar_ids_notificados():
 
 def guardar_id_notificado(uid):
     with open(HISTORIAL_FILE, "a") as f:
-        f.write(uid+"\n")
+        f.write(uid + "\n")
     notificados.add(uid)
 
 def log_event(txt):
-    with open(LOG_FILE,"a",encoding="utf-8") as f:
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
         f.write(f"[{datetime.now()}] {txt}\n")
 
 def contiene_palabra_clave(texto):
-    texto_low = texto.lower()
-
+    texto_low = (texto or "").lower()
     for palabra in GENERAL_KEYWORDS:
         if palabra.lower() in texto_low:
             return True
-
-    for a,b in COMBINACIONES_ESPECIALES:
-        if a.lower() in texto_low and b.lower() in texto_low:
-            return True
-
-    for a,b,c in COMBINACIONES_TRIPLES:
-        if a.lower() in texto_low and b.lower() in texto_low and c.lower() in texto_low:
-            return True
-
     return False
 
 def enviar_telegram(msg):
     try:
-        url=f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-        requests.post(url,data={"chat_id":CHAT_ID,"text":msg,"parse_mode":"HTML"})
+        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+        r = requests.post(
+            url,
+            data={"chat_id": CHAT_ID, "text": msg, "parse_mode": "HTML"},
+            timeout=20
+        )
+        if r.status_code != 200:
+            log_event(f"❌ Telegram {r.status_code}: {r.text}")
     except Exception as e:
-        log_event(f"Error Telegram: {e}")
+        log_event(f"❌ Error Telegram: {e}")
 
 def revisar_rss():
     for url in RSS_FEEDS:
         try:
-            feed=feedparser.parse(url)
+            feed = feedparser.parse(url)
             for entry in feed.entries:
-                link=entry.get("link","")
-                title=entry.get("title","")
-                summary=entry.get("summary","")
-                uid=link or title
+                link = entry.get("link", "")
+                title = entry.get("title", "")
+                summary = entry.get("summary", "")
+                uid = link or title
 
                 if uid in notificados:
                     continue
 
-                texto=f"{title} {summary}"
+                texto = f"{title} {summary}"
                 if contiene_palabra_clave(texto):
-                    mensaje=f"📰 <b>{title}</b>\n🔗 {link}"
+                    mensaje = f"📰 <b>{title}</b>\n🔗 {link}"
                     enviar_telegram(mensaje)
                     guardar_id_notificado(uid)
                     log_event(f"Enviada: {title}")
@@ -182,22 +116,27 @@ def revisar_rss():
             log_event(f"Error en feed {url}: {e}")
 
 # === FLASK KEEP ALIVE ===
-app=Flask('')
+app = Flask('')
 
 @app.route('/')
 def home():
     return "Bot activo 🚀"
 
+@app.route('/test')
+def test():
+    enviar_telegram("✅ Test OK desde Render")
+    return "Test enviado"
+
 def run():
-    app.run(host='0.0.0.0',port=8080)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)), debug=False)
 
 Thread(target=run).start()
 
 # === INICIO ===
-notificados=cargar_ids_notificados()
+notificados = cargar_ids_notificados()
 enviar_telegram("✅ Bot iniciado")
 
 while True:
-    ultimo_latido=time.time()
+    ultimo_latido = time.time()
     revisar_rss()
     time.sleep(60)
